@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+	<!-- Appenders -->
+	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+		<!-- <param name="Target" value="System.out" /> <layout class="ch.qos.logback.classic.PatternLayout"> 
+			<param name="ConversionPattern" value="%-5p: %c - %m%n" /> </layout> -->
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [IP=%X{client}] [%thread] %-5level %logger{36} - %msg%n
+			</pattern>
+		</encoder>
+	</appender>
+
+	<!-- Application Loggers -->
+	<logger name="gz.test.mostgreat2">
+		<level value="debug" />
+	</logger>
+
+	<!-- 3rdparty Loggers -->
+	<logger name="org.springframework.core">
+		<level value="debug" />
+	</logger>
+
+	<logger name="org.springframework.beans">
+		<level value="debug" />
+	</logger>
+
+	<logger name="org.springframework.context">
+		<level value="debug" />
+	</logger>
+
+	<logger name="org.springframework.web">
+		<level value="debug" />
+	</logger>
+	<!-- Root Logger -->
+	<root>
+		<priority value="warn" />
+		<appender-ref ref="console" />
+	</root>
+
+</configuration>

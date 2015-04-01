@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="gz_test" default="deploy" basedir=".">
+
+	<!-- <property file="build/dev_server/server-build.properties"/> -->
+
+	<property name="src.war" value="test.war" />
+	<property name="deploy.dir" location="/sorc001/was/test" />
+	<property name="deploy.web.dir" location="/sorc001/web/test" />
+
+	<property name="was.engine.dir" location="/engn001/tomcat7/apache-tomcat-7.0.57" />
+
+	<!--
+	<path id="catalina-ant-classpath">
+		<fileset dir="${was.engine.dir/lib">
+			<include name="catalina-ant.jar"/>
+		</fileset>
+	</path>
+	-->
+
+
+	<!--********************************* 
+	*                                   *
+	*       Copy Compiled Files         *
+	*       to deploay Path             *
+	*************************************-->
+	<target name="deploy">
+
+		<antcall target="tomcat_stop" />
+		<antcall target="deploy_to_was" />
+		<antcall target="tomcat_start" />
+
+	</target>
+
+	<!--********************************* 
+	*                                   *
+	*       copy sources to WAS&WEB     *
+	*                                   *
+	*************************************-->
+	<target name="deploy_to_was">
+
+		<echo message="Step1. Delete current deployed sources."/>
+		<delete includeemptydirs="true">
+			<fileset dir="${deploy.dir}" includes="**/*"/>
+		</delete>
+
+		<echo message="Step2. Copy War to deploy Dir."/>
+		<copy file="${src.war}" todir="${deploy.dir}"/>
+
+		<echo message="Step3. Unzip War."/>
+		<unzip src="${deploy.dir}/${src.war}" dest="${deploy.dir}"/>
+
+		<echo message="Step4. Delete War."/>
+		<delete file="${deploy.dir}/${src.war}"/>
+
+		<echo message="Step5. Copy CSS/JS to WEB deploy Dir."/>
+
+		<copy todir="${deploy.web.dir}/common" includeemptydirs="true">
+			<fileset dir="./src/main/webapp/common"/>
+		</copy>
+
+		<copy todir="${deploy.web.dir}/css" includeemptydirs="true">
+			<fileset dir="./src/main/webapp/css"/>
+		</copy>
+		
+		<copy todir="${deploy.web.dir}/js" includeemptydirs="true">
+			<fileset dir="./src/main/webapp/js"/>
+		</copy>
+
+	</target>
+
+	<!--********************************* 
+	*                                   *
+	*       Tomcat Was Stop             *
+	*                                   *
+	*************************************-->
+	<target name="tomcat_stop">
+		<echo message="Tomcat STOP"/>
+		<java classname="org.apache.catalina.startup.Bootstrap" fork="true">
+			<classpath path="${was.engine.dir}/bin/bootstrap.jar:${was.engine.dir}/bin/tomcat-juli.jar" />
+			<jvmarg value="-Dcatalina.home=${was.engine.dir}"/>
+			<arg line="stop"/>
+		</java>
+	</target>
+
+	<!--********************************* 
+	*                                   *
+	*       Tomcat Was Start            *
+	*                                   *
+	*************************************-->
+	<target name="tomcat_start">
+		<echo message="Tomcat START"/>
+		<exec executable="${was.engine.dir}/bin/start.sh" spawn="true">
+			<env key="BUILD_ID" value="dontKillMe" />
+			<arg line="myserver" />
+		</exec>
+	</target>
+
+</project>
