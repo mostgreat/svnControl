@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="gz_test" default="deploy" basedir=".">
+<project name="svnTest" default="deploy" basedir=".">
 
 	<!-- <property file="build/dev_server/server-build.properties"/> -->
 
