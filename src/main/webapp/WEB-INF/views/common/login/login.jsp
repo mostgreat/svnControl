@@ -7,7 +7,7 @@
 %>
 <html>
 <head>
-<title>Where You At(WUA) Login Page</title>
+<title>Login Page</title>
 <%@ include file="/common/include/head.jspf"%>
 <link rel="stylesheet" type="text/css" href="http://cdn.axisj.com/axicon/axicon.min.css" />
 <script type="text/javascript" src="<c:url value="/js/rsa/jsbn.js" />"></script>
@@ -91,14 +91,7 @@
 			<div class="col-sm-6 col-md-4 col-md-offset-4">
 				<!-- <h1 class="text-center login-title">Sign in Bootsnipp</h1> -->
 				<div class="account-wall">
-					<center>
-						<!-- <img class="profile-img"
-						src="https://lh5.googleusercontent.com/-b0-k99FZlyE/AAAAAAAAAAI/AAAAAAAAAAA/eu7opA4byxI/photo.jpg?sz=120"
-						alt=""> -->
-						<font size="90"> <i class="axi axi-location-2"></i> <i
-							class="axi axi-my-location"></i> <i class="axi axi-location-2"></i>
-						</font>
-					</center>
+
 					<input type="text" id="userId" name="userId" class="form-control"
 						placeholder="Email" required autofocus> <input
 						type="password" id="passWd" name="passWd" class="form-control"
@@ -109,7 +102,7 @@
 						<button class="btn btn-lg btn-primary btn-block" type="button" onclick="validateEncryptedForm()">Sign in</button>
 						<label class="checkbox pull-left"> <input type="checkbox"
 							value="remember-me"> Remember me
-						</label> <a href="#" class="pull-right need-help">Need help? </a> 
+						</label>  
 						<span class="clearfix"></span>
 					<form class="form-signin" action="<c:url value="/login.do"/>" method="post" id="securedLoginForm" name="securedLoginForm"> 
 						<input type="hidden" name="securedUsername" id="securedUsername" value="" /> 
