@@ -18,7 +18,7 @@
 
 	<!-- Handles HTTP GET requests for /resources/** by efficiently serving 
 		up static resources in the ${webappRoot}/resources directory -->
-	<!-- <resources mapping="/css/**" location="/WEB-INF/css/" /> -->
+	<resources mapping="/gif/**" location="/WEB-INF/images/" />
 
 	<!-- Configure to plugin JSON as request and response in method handler -->
     <beans:bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
