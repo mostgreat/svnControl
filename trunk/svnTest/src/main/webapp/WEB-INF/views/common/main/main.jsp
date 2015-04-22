@@ -33,7 +33,7 @@
 		    right:0;
 		    top:0;
 		    bottom:0;
-		    background: rgba(0,0,0,0.2); /*not in ie */
+		    background: rgba(255,255,255,0.2); /*not in ie */
 		    filter: progid:DXImageTransform.Microsoft.Gradient(startColorstr='#20000000', endColorstr='#20000000');    /* ie */
 		}
 	    
@@ -50,7 +50,6 @@
 		.AXInput{
 
 		}
-				
         
 </style>
 
@@ -61,7 +60,9 @@
 <script type="text/javascript">
 	var pageID = "AXTree";
 	var myTree = new AXTree();
+	var myTree_target = new AXTree();
 	var Tree = "";
+	var Tree_target = "";
 	
 	$( document ).ready(function() {
 		$("#readMore").click(function () {
@@ -102,24 +103,90 @@
 					,timeout:100000 
 				});	
 			});
+		
+		$("#readMore2").click(function () {
+			
+			var a = document.getElementById("svnUrl2").value;
+		    var b = document.getElementById("svnUser2").value;
+		    var c = document.getElementById("svnPassword2").value;
+		    
+		    if (!a || !b || !c) {
+		        alert("Fill out every Input Condition");
+		        return false;
+		    }
+			
+			var params = $('#svnInfoForm').serialize();
+			var url = '<c:url value="/svn/login.do" />';
+			
+			$.ajax({
+					type:"post"		// 포스트방식
+					,url:url		// url 주소
+					,data:params	//  요청에 전달되는 프로퍼티를 가진 객체
+					,dataType:"json"
+					,success:function(data){	//응답이 성공 상태 코드를 반환하면 호출되는 함수
+						
+						Tree_target = data;
+						fnObj2.pageStart.delay(0.1);
+					}
+				    ,error:function(e) {	// 이곳의 ajax에서 에러가 나면 얼럿창으로 에러 메시지 출력
+				    	
+				    	alert(e.responseText);
+				    }
+				    ,beforeSend:function(){
+				        $('.wrap-loading').removeClass('display-none');
+				    }
+					,complete:function(){
+				        $('.wrap-loading').addClass('display-none');
+				 
+				    }
+					,timeout:100000 
+				});	
+			});
 	});
 	
 	$.fn.sourceClick = function (item){
 		
-		var url = '<c:url value="/svn/getContents.do" />';
-		var params = {"inputData" : item}; 
+		var url = '<c:url value="/svn/getContent.do" />';
+		var params = {"name" : item.name
+				     ,"path": item.path}; 
 		
 		$.ajax({
 				type:"post"		// 포스트방식
 				,url:url		// url 주소
 				,data:params	//  요청에 전달되는 프로퍼티를 가진 객체
-				,dataType:"json"
 				,success:function(data){	//응답이 성공 상태 코드를 반환하면 호출되는 함수
-					alert(data);
+					$('#sourceContent').html('<xmp>' + data + '</xmp>');
 				}
 			    ,error:function(e) {	// 이곳의 ajax에서 에러가 나면 얼럿창으로 에러 메시지 출력
 			    	
-			    	alert(e.responseText);
+			    	alert("error" + e.responseText);
+			    }
+			    ,beforeSend:function(){
+			        $('.wrap-loading').removeClass('display-none');
+			    }
+				,complete:function(){
+			        $('.wrap-loading').addClass('display-none');
+			 
+			    }
+			});	
+	};
+	
+	$.fn.sourceClick_target = function (item){
+		
+		var url = '<c:url value="/svn/getContent.do" />';
+		var params = {"name" : item.name
+				     ,"path": item.path}; 
+		
+		$.ajax({
+				type:"post"		// 포스트방식
+				,url:url		// url 주소
+				,data:params	//  요청에 전달되는 프로퍼티를 가진 객체
+				,success:function(data){	//응답이 성공 상태 코드를 반환하면 호출되는 함수
+					$('#sourceContent_target').html('<xmp>' + data + '</xmp>');
+				}
+			    ,error:function(e) {	// 이곳의 ajax에서 에러가 나면 얼럿창으로 에러 메시지 출력
+			    	
+			    	alert("error" + e.responseText);
 			    }
 			    ,beforeSend:function(){
 			        $('.wrap-loading').removeClass('display-none');
@@ -163,9 +230,9 @@
 						indent:true,
 						getIconClass: function(){
 							//folder, AXfolder, movie, img, zip, file, fileTxt, fileTag
-							//var iconNames = "folder, AXfolder, movie, img, zip, file, fileTxt, fileTag".split(/, /g);
+							var iconNames = "folder, AXfolder, movie, img, zip, file, fileTxt, fileTag".split(/, /g);
 							var iconName = "file";
-							//if(this.item.type) iconName = iconNames[this.item.type];
+							if(this.item.type) iconName = iconNames[this.item.type];
 							return iconName;
 						},
 						formatter:function(){
@@ -184,8 +251,10 @@
 				},
 				body: {
 					onclick:function(idx, item){
-						//toast.push(Object.toJSON(this.item));
-						$.fn.sourceClick(this.item);
+						if(this.item.open == false){
+							$.fn.sourceClick(this.item);
+							//toast.push(Object.toJSON(this.item));
+						}
 					},
 					addClass: function(){
 						// red, green, blue, yellow
@@ -203,6 +272,81 @@
 
 		}
 	};
+	
+	var fnObj2 = {
+			pageStart: function(){
+				
+				fnObj2.tree1();
+				myTree_target.setTree(Tree_target);
+				
+			},
+			tree1: function(){
+
+				myTree.setConfig({
+					targetID : "AXTreeTarget_target",
+					theme: "AXTree",
+					//height:"auto",
+					//width:"auto",
+					xscroll:true,
+					fitToWidth:true, // 너비에 자동 맞춤
+					indentRatio:1,
+					reserveKeys:{
+						parentHashKey:"pHash", // 부모 트리 포지션
+						hashKey:"hash", // 트리 포지션
+						openKey:"open", // 확장여부
+						subTree:"subTree", // 자식개체키
+						displayKey:"display" // 표시여부
+					},
+					colGroup: [
+						{
+							key:"name",
+							label:"dir",
+							width:"200", align:"left",
+							indent:true,
+							getIconClass: function(){
+								//folder, AXfolder, movie, img, zip, file, fileTxt, fileTag
+								var iconNames = "folder, AXfolder, movie, img, zip, file, fileTxt, fileTag".split(/, /g);
+								var iconName = "file";
+								if(this.item.type) iconName = iconNames[this.item.type];
+								return iconName;
+							},
+							formatter:function(){
+								return "<u>" + this.item.name + "</u>";
+							},
+							tooltip:function(){
+								return this.item.name;
+							}
+						}
+						,{key:"author", label:"commiter", width:"70", align:"center"}
+						,{key:"revision", label:"revision", width:"50", align:"center"}
+						,{key:"date", label:"date", width:"100", align:"center"}
+					],
+					colHead: {
+						display:true
+					},
+					body: {
+						onclick:function(idx, item){
+							if(this.item.open == false){
+								$.fn.sourceClick_target(this.item);
+								//toast.push(Object.toJSON(this.item));
+							}
+						},
+						addClass: function(){
+							// red, green, blue, yellow
+							// 중간에 구분선으로 나오는 AXTreeSplit 도 this.index 가 있습니다. 색 지정 클래스를 추가하는 식을 넣으실때 고려해 주세요.
+							/*
+							if(this.index % 2 == 0){
+								return "green";
+							}else{
+								return "red";
+							}
+							*/						
+						}
+					}
+				});
+
+			}
+		};
 </script>
 <body>
 <div class="wrap-loading display-none">
@@ -210,44 +354,73 @@
 </div>   
 
 <div id="AXPage">
-	
 	<!-- s.AXPageBody -->
 	<div id="AXPageBody" class="SampleAXSelect">
         <div id="demoPageTabTarget" class="AXdemoPageTabTarget"></div>
 		<div class="AXdemoPageContent">
 			<div class="title"><h1>SVN Explorer</h1></div>
-			<input type="button" value="View SVN" class="AXButton Red" id="readMore" name="readMore"/>
 			<a href="<c:url value="/logout.do" />"><input type="button" value="Logout" class="AXButton Green" id="logout" name="logout" /></a>
 			<hr>
+			
+			
+			
 			<section class="ax-layer-1">
-				<div class="ax-col-3">
-					<div class="ax-unit">
-						<h2>SVN Information</h2>
-						<form id="svnInfoForm" name="svnInfoForm">
-							<label>SVN Url</label>
-							<input type="text" id="svnUrl" name="svnUrl" value="http://wua.social:7070/subversion" class="AXInput" />
-							<label>SVN User Name</label>
-							<input type="text" id="svnUser" name="svnUser" value="test" class="AXInput" />
-							<label>SVN Password</label>
-							<input type="text" id="svnPassword" name="svnPassword" value="1234" class="AXInput" />
-						</form>
-					</div>	
-				</div>		
-				<div class="ax-col-10">
-					<div class="ax-unit">
-						<table cellpadding="0" cellspacing="0" style="table-layout:fixed;width:100%;">
+						
+				<div class="ax-col-5">
+				<div class="ax-unit">
+					<input type="button" value="View Source SVN" class="AXButton Red" id="readMore" name="readMore"/><h2>Source SVN Information</h2>
+					<form id="svnInfoForm" name="svnInfoForm">
+						<label>SVN Url</label>
+						<input type="text" id="svnUrl" name="svnUrl" value="svn://54.65.9.65/svn" class="AXInput" />
+						<label>SVN User Name</label>
+						<input type="text" id="svnUser" name="svnUser" value="장현석" class="AXInput" />
+						<label>SVN Password</label>
+						<input type="password" id="svnPassword" name="svnPassword" value="1234" class="AXInput" />
+					</form>
+					
+					<table cellpadding="0" cellspacing="0" style="table-layout:fixed;width:100%;">
 			                <tbody>
 			                    <tr>
 			                        <td>
 			                            <div id="AXTreeTarget" style="height:600px;"></div>
 			                        </td>
-			                        <td>
-			                            <div id="contents" style="height:600px;"></div>
-			                        </td>
+			                        
 			                    </tr>
 			                </tbody>
 			            </table>
-		            </div>
+					
+					<h2>Source Code</h2>
+					<div id="sourceContent" style="height:500px; widows: 500px; overflow: auto;" ></div>
+					
+					</div>
+			</div>
+			
+			<div class="ax-col-5">
+					<input type="button" value="View Target SVN" class="AXButton Red" id="readMore2" name="readMore2"/><h2>Target SVN Information</h2>
+					<form id="svnInfoForm" name="svnInfoForm">
+						<label>SVN Url</label>
+						<input type="text" id="svnUrl2" name="svnUrl2" value="svn://54.65.9.65/svn" class="AXInput" />
+						<label>SVN User Name</label>
+						<input type="text" id="svnUser2" name="svnUser2" value="장현석" class="AXInput" />
+						<label>SVN Password</label>
+						<input type="password" id="svnPassword2" name="svnPassword2" value="1234" class="AXInput" />
+					</form>
+					
+					<table cellpadding="0" cellspacing="0" style="table-layout:fixed;width:100%;">
+			                <tbody>
+			                    <tr>
+			                        <td>
+			                            <div id="AXTreeTarget_target" style="height:600px;"></div>
+			                        </td>
+			                        
+			                    </tr>
+			                </tbody>
+			            </table>
+					
+					<h2>Source Code</h2>
+					<div id="sourceContent_target" style="height:500px; widows: 500px; overflow: auto;" ></div>
+					
+					</div>
 				</div>
 			</section>
 			
