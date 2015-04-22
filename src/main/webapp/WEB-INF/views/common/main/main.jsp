@@ -115,7 +115,7 @@
 		        return false;
 		    }
 			
-			var params = $('#svnInfoForm').serialize();
+			var params = $('#svnInfoForm2').serialize();
 			var url = '<c:url value="/svn/login.do" />';
 			
 			$.ajax({
@@ -282,7 +282,7 @@
 			},
 			tree1: function(){
 
-				myTree.setConfig({
+			myTree_target.setConfig({
 					targetID : "AXTreeTarget_target",
 					theme: "AXTree",
 					//height:"auto",
@@ -397,13 +397,13 @@
 			
 			<div class="ax-col-5">
 					<input type="button" value="View Target SVN" class="AXButton Red" id="readMore2" name="readMore2"/><h2>Target SVN Information</h2>
-					<form id="svnInfoForm" name="svnInfoForm">
+					<form id="svnInfoForm2" name="svnInfoForm2">
 						<label>SVN Url</label>
-						<input type="text" id="svnUrl2" name="svnUrl2" value="svn://54.65.9.65/svn" class="AXInput" />
+						<input type="text" id="svnUrl2" name="svnUrl" value="svn://54.65.9.65/svn" class="AXInput" />
 						<label>SVN User Name</label>
-						<input type="text" id="svnUser2" name="svnUser2" value="장현석" class="AXInput" />
+						<input type="text" id="svnUser2" name="svnUser" value="장현석" class="AXInput" />
 						<label>SVN Password</label>
-						<input type="password" id="svnPassword2" name="svnPassword2" value="1234" class="AXInput" />
+						<input type="password" id="svnPassword2" name="svnPassword" value="1234" class="AXInput" />
 					</form>
 					
 					<table cellpadding="0" cellspacing="0" style="table-layout:fixed;width:100%;">
