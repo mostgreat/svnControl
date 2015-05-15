@@ -6,7 +6,6 @@
 	<artifactId>mostgreat2</artifactId>
 	<name>svnTest</name>
 	<packaging>war</packaging>
-	
 	<version>1.0.0-BUILD-SNAPSHOT</version>
 	   
 	<properties>
