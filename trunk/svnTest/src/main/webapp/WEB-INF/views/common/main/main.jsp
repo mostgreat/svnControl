@@ -59,10 +59,15 @@
 </head>
 <script type="text/javascript">
 	var pageID = "AXTree";
-	var myTree = new AXTree();
-	var myTree_target = new AXTree();
+	var myTree = "";
+	var myTree_target = "";
 	var Tree = "";
 	var Tree_target = "";
+	
+	var sourceUrl = "";
+	var targetUrl = "";
+	var sourceRevision = "";
+	var targetRevision = "";
 	
 	$( document ).ready(function() {
 		$("#readMore").click(function () {
@@ -78,6 +83,9 @@
 			
 			var params = $('#svnInfoForm').serialize();
 			var url = '<c:url value="/svn/login.do" />';
+			
+			Tree = "";
+			myTree = new AXTree();
 			
 			$.ajax({
 					type:"post"		// 포스트방식
@@ -118,6 +126,10 @@
 			var params = $('#svnInfoForm2').serialize();
 			var url = '<c:url value="/svn/login.do" />';
 			
+			Tree_target = "";
+			myTree_target = new AXTree();
+			
+			
 			$.ajax({
 					type:"post"		// 포스트방식
 					,url:url		// url 주소
@@ -141,14 +153,50 @@
 				    }
 					,timeout:100000 
 				});	
+		});
+	
+		$("#readDiff").click(function () {
+			
+			var params = { "sourceUrl"           : sourceUrl ,
+						   "destinationUrl"      : targetUrl,
+						   "sourceRevision"      : sourceRevision,
+						   "destinationRevision" : targetRevision};
+			
+			var url = '<c:url value="/svn/getDiff.do" />';
+			
+			$.ajax({
+					type:"post"		// 포스트방식
+					,url:url		// url 주소
+					,data:params	//  요청에 전달되는 프로퍼티를 가진 객체
+					,success:function(data){	//응답이 성공 상태 코드를 반환하면 호출되는 함수
+						$('#readDiffcontents').html('<xmp>' + data + '</xmp>');
+					}
+				    ,error:function(e) {	// 이곳의 ajax에서 에러가 나면 얼럿창으로 에러 메시지 출력
+				    	
+				    	alert(e.responseText);
+				    }
+				    ,beforeSend:function(){
+				        $('.wrap-loading').removeClass('display-none');
+				    }
+					,complete:function(){
+				        $('.wrap-loading').addClass('display-none');
+				 
+				    }
+					,timeout:100000 
 			});
+		});
+		
 	});
+	
 	
 	$.fn.sourceClick = function (item){
 		
 		var url = '<c:url value="/svn/getContent.do" />';
+		
 		var params = {"name" : item.name
 				     ,"path": item.path}; 
+		
+		console.log(item.path + item.name + item.revision);
 		
 		$.ajax({
 				type:"post"		// 포스트방식
@@ -253,6 +301,10 @@
 					onclick:function(idx, item){
 						if(this.item.open == false){
 							$.fn.sourceClick(this.item);
+							sourceUrl = '/' + this.item.path + this.item.name;
+							sourceRevision = this.item.revision;
+							//myTree_target.click(idx);
+							//$.fn.sourceClick_target(this.item);
 							//toast.push(Object.toJSON(this.item));
 						}
 					},
@@ -328,6 +380,8 @@
 						onclick:function(idx, item){
 							if(this.item.open == false){
 								$.fn.sourceClick_target(this.item);
+								targetUrl = '/' + this.item.path + this.item.name;
+								targetRevision = this.item.revision;
 								//toast.push(Object.toJSON(this.item));
 							}
 						},
@@ -368,21 +422,21 @@
 						
 				<div class="ax-col-5">
 				<div class="ax-unit">
-					<input type="button" value="View Source SVN" class="AXButton Red" id="readMore" name="readMore"/><h2>Source SVN Information</h2>
+					<input type="button" value="View Source SVN" class="AXButton Red" id="readMore" name="readMore"/>
 					<form id="svnInfoForm" name="svnInfoForm">
 						<label>SVN Url</label>
-						<input type="text" id="svnUrl" name="svnUrl" value="svn://54.65.9.65/svn" class="AXInput" />
+						<input type="text" id="svnUrl" name="svnUrl" value="http://wua.social:7070/subversion" class="AXInput" />
 						<label>SVN User Name</label>
-						<input type="text" id="svnUser" name="svnUser" value="장현석" class="AXInput" />
+						<input type="text" id="svnUser" name="svnUser" value="test" class="AXInput" />
 						<label>SVN Password</label>
-						<input type="password" id="svnPassword" name="svnPassword" value="1234" class="AXInput" />
+						<input type="password" id="svnPassword" name="svnPassword" value="" class="AXInput" />
 					</form>
 					
 					<table cellpadding="0" cellspacing="0" style="table-layout:fixed;width:100%;">
 			                <tbody>
 			                    <tr>
 			                        <td>
-			                            <div id="AXTreeTarget" style="height:600px;"></div>
+			                            <div id="AXTreeTarget" style="height:300px;"></div>
 			                        </td>
 			                        
 			                    </tr>
@@ -390,27 +444,27 @@
 			            </table>
 					
 					<h2>Source Code</h2>
-					<div id="sourceContent" style="height:500px; widows: 500px; overflow: auto;" ></div>
+					<div id="sourceContent" style="height:400px; widows: 500px; overflow: auto;" ></div>
 					
 					</div>
 			</div>
 			
 			<div class="ax-col-5">
-					<input type="button" value="View Target SVN" class="AXButton Red" id="readMore2" name="readMore2"/><h2>Target SVN Information</h2>
+					<input type="button" value="View Target SVN" class="AXButton Red" id="readMore2" name="readMore2"/>
 					<form id="svnInfoForm2" name="svnInfoForm2">
 						<label>SVN Url</label>
-						<input type="text" id="svnUrl2" name="svnUrl" value="svn://54.65.9.65/svn" class="AXInput" />
+						<input type="text" id="svnUrl2" name="svnUrl" value="http://wua.social:7070/subversion" class="AXInput" />
 						<label>SVN User Name</label>
-						<input type="text" id="svnUser2" name="svnUser" value="장현석" class="AXInput" />
+						<input type="text" id="svnUser2" name="svnUser" value="test" class="AXInput" />
 						<label>SVN Password</label>
-						<input type="password" id="svnPassword2" name="svnPassword" value="1234" class="AXInput" />
+						<input type="password" id="svnPassword2" name="svnPassword" value="" class="AXInput" />
 					</form>
 					
 					<table cellpadding="0" cellspacing="0" style="table-layout:fixed;width:100%;">
 			                <tbody>
 			                    <tr>
 			                        <td>
-			                            <div id="AXTreeTarget_target" style="height:600px;"></div>
+			                            <div id="AXTreeTarget_target" style="height:300px;"></div>
 			                        </td>
 			                        
 			                    </tr>
@@ -418,14 +472,19 @@
 			            </table>
 					
 					<h2>Source Code</h2>
-					<div id="sourceContent_target" style="height:500px; widows: 500px; overflow: auto;" ></div>
+					<div id="sourceContent_target" style="height:400px; widows: 500px; overflow: auto;" ></div>
 					
 					</div>
 				</div>
 			</section>
 			
-			<div class="H10"></div>
-            
+			<div class="ax-col-10">
+			<center><input type="button" value="View Difference" class="AXButton Red" id="readDiff" name="readDiff"/></center>
+			</div>
+			
+			<div class="ax-col-10">
+				<div id="readDiffcontents" style="height:400px; widows: 500px; overflow: auto;" ></div>
+			</div>
 
 		</div>
 	</div>

@@ -33,7 +33,6 @@
 	</logger>
 	<!-- Root Logger -->
 	<root>
-		<priority value="warn" />
 		<appender-ref ref="console" />
 	</root>
 

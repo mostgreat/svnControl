@@ -4,6 +4,7 @@ import gz.test.mostgreat2.common.model.SimpleResult;
 import gz.test.mostgreat2.svnControll.model.SvnInfo;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -16,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,9 +31,14 @@ import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
+import org.tmatesoft.svn.core.internal.wc2.ng.SvnDiffGenerator;
 import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
+import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
+import org.tmatesoft.svn.core.wc2.SvnDiff;
+import org.tmatesoft.svn.core.wc2.SvnOperationFactory;
+import org.tmatesoft.svn.core.wc2.SvnTarget;
 
 /**
  * Handles requests for the application home page.
@@ -79,7 +86,8 @@ public class connectController {
 	@RequestMapping(value = "/getContent.do", method = RequestMethod.POST)
 	public @ResponseBody String getContent( HttpServletRequest req
 										    ,@RequestParam("name") String name
-										    ,@RequestParam("path") String path) throws Exception {
+										    ,@RequestParam("path") String path,
+										    Model model) throws Exception {
 		
 		logger.debug("SVN Get Contents");
 		logger.debug(path.replace("//", "/") + name);
@@ -181,6 +189,58 @@ public class connectController {
   
         logger.debug(baos.toString("UTF-8"));
 		result.setResult( baos.toString("UTF-8"));
+		return result;
+		
+	}
+	
+	@RequestMapping(value = "/getDiff.do")
+	public @ResponseBody String seeDiff( HttpServletRequest req
+										    ,@RequestParam("sourceUrl") String sourceUrl
+										    ,@RequestParam("destinationUrl") String destinationUrl
+										    ,@RequestParam("sourceRevision") String sourceRevision
+										    ,@RequestParam("destinationRevision") String destinationRevision
+										    ) throws Exception {
+		
+		String result = "";
+		SVNRepository repository = null;
+		
+		
+		final SvnOperationFactory svnOperationFactory = new SvnOperationFactory();
+		
+	    try {
+	    	
+	    	repository = SVNRepositoryFactory.create( SVNURL.parseURIEncoded( SVN_URL ) );
+	        ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager( SVN_USER , SVN_PASSWORD );
+	        repository.setAuthenticationManager( authManager );
+	        
+	        final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+	        final SvnDiffGenerator diffGenerator = new SvnDiffGenerator();
+	        diffGenerator.setBasePath(new File(""));
+	        
+	        final SVNURL url1 = SVNURL.parseURIEncoded( SVN_URL + sourceUrl );
+	        final SVNURL url2 = SVNURL.parseURIEncoded( SVN_URL + destinationUrl );
+	        logger.debug("Source SVN URL is = " + url1);
+	        logger.debug("Target SVN URL is = " + url2);
+	        
+	        final SVNRevision svnRevision1 = SVNRevision.parse(sourceRevision);
+	        final SVNRevision svnRevision2 = SVNRevision.parse(destinationRevision);
+	        
+	        logger.debug("Source SVN URL Revision = " + svnRevision1);
+	        logger.debug("Target SVN URL Revision = " + svnRevision2);
+	        
+	        final SvnDiff diff = svnOperationFactory.createDiff();
+	        svnOperationFactory.setAuthenticationManager(authManager);
+	        diff.setSources(SvnTarget.fromURL(url1 , svnRevision1 ), SvnTarget.fromURL(url2, svnRevision2));
+	        diff.setDiffGenerator(diffGenerator);
+	        diff.setOutput(byteArrayOutputStream);
+	        diff.run();
+	        logger.debug("Diff Result = " + byteArrayOutputStream);
+	        result = new String(byteArrayOutputStream.toByteArray()).replace(System.getProperty("line.separator"), "\n");
+	        
+	    } finally {
+	        svnOperationFactory.dispose();
+	    }
+		
 		return result;
 		
 	}
