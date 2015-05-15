@@ -209,6 +209,21 @@
 			<version>0.17.0.RELEASE</version>
 		</dependency>
 
+		<!-- SqlJet -->
+		<dependency>
+			<groupId>org.tmatesoft.sqljet</groupId>
+			<artifactId>sqljet</artifactId>
+			<version>1.1.10</version>
+		</dependency>
+		
+		<!-- Sequence-library -->
+		<dependency>
+			<groupId>de.regnis.q.sequence</groupId>
+			<artifactId>sequence-library</artifactId>
+			<version>1.0.3</version>
+		</dependency>
+
+
 	</dependencies>
 
 	<build>
