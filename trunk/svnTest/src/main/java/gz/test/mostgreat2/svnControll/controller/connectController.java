@@ -200,13 +200,9 @@ public class connectController {
 										    ,@RequestParam("sourceRevision") String sourceRevision
 										    ,@RequestParam("destinationRevision") String destinationRevision
 										    ) throws Exception {
-		  
 		String result = "";
 		SVNRepository repository = null;
-		
-		
 		final SvnOperationFactory svnOperationFactory = new SvnOperationFactory();
-		
 	    try {
 	    	
 	    	repository = SVNRepositoryFactory.create( SVNURL.parseURIEncoded( SVN_URL ) );
@@ -218,7 +214,7 @@ public class connectController {
 	        diffGenerator.setBasePath(new File(""));
 	        
 	        final SVNURL url1 = SVNURL.parseURIEncoded( SVN_URL + sourceUrl );
-	        final SVNURL url2 = SVNURL.parseURIEncoded( SVN_URL + destinationUrl );
+	        final SVNURL url2 = SVNURL.parseURIEncoded( SVN_URL + destinationUrl);
 	        logger.debug("Source SVN URL is = " + url1);
 	        logger.debug("Target SVN URL is = " + url2);
 	        
@@ -291,6 +287,7 @@ public class connectController {
             if (entry.getKind() == SVNNodeKind.DIR) {
             	svnInfo.setOpen(true);  //If this has child or not
             	svnInfo.setOpenStatus(false);
+            	svnInfo.setFile(false);
             }else if(entry.getKind() == SVNNodeKind.FILE){
             	svnInfo.setFile(true);            	
             }
