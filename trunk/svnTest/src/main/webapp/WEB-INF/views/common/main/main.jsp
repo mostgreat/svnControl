@@ -310,7 +310,6 @@
 				},
 				body: {
 					onclick:function(idx, item){
-						
 							if(this.item.file){
 							$.fn.sourceClick(this.item);
 							sourceUrl = '/' + this.item.path + this.item.name;
@@ -482,7 +481,7 @@
 					<h2>Source Code</h2>
 					<div id="sourceContent_target" style="height:400px; widows: 500px; overflow: auto;" ></div>
 					
-					</div>
+				</div>
 				</div>
 			</section>
 			
