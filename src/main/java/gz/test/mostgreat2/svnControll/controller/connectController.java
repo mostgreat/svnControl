@@ -89,7 +89,7 @@ public class connectController {
 										    ,@RequestParam("path") String path,
 										    Model model) throws Exception {
 		
-		logger.debug("SVN Get Contents");
+		logger.debug("SVN Get Content");
 		logger.debug(path.replace("//", "/") + name);
 		
 		DAVRepositoryFactory.setup( );
@@ -284,9 +284,15 @@ public class connectController {
             svnInfo.setRevision(entry.getRevision());
             svnInfo.setDate(entry.getDate().toString());
             svnInfo.setOpen(false);
+            svnInfo.setOpenStatus(false);
+            svnInfo.setChk(false);
+            svnInfo.setFile(false);
             
             if (entry.getKind() == SVNNodeKind.DIR) {
-            	svnInfo.setOpen(true);
+            	svnInfo.setOpen(true);  //If this has child or not
+            	svnInfo.setOpenStatus(false);
+            }else if(entry.getKind() == SVNNodeKind.FILE){
+            	svnInfo.setFile(true);            	
             }
             svnInfolist.add(svnInfo);
         }

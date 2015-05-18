@@ -10,8 +10,31 @@ public class SvnInfo {
     private String author;
     private Long revision;
     private String date;
+    private boolean openStatus;
+    private boolean chk;
+    private boolean isFile;
     
-    private boolean open;
+    
+    
+	public boolean isFile() {
+		return isFile;
+	}
+	public void setFile(boolean isFile) {
+		this.isFile = isFile;
+	}
+	public boolean isChk() {
+		return chk;
+	}
+	public void setChk(boolean chk) {
+		this.chk = chk;
+	}
+	public boolean isOpenStatus() {
+		return openStatus;
+	}
+	public void setOpenStatus(boolean openStatus) {
+		this.openStatus = openStatus;
+	}
+	private boolean open;
     private List<SvnInfo> subTree = new ArrayList<SvnInfo>();
 	public String getName() {
 		return name;
