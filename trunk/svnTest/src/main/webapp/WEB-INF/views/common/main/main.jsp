@@ -260,17 +260,28 @@
 				theme: "AXTree",
 				//height:"auto",
 				//width:"auto",
-				xscroll:true,
-				fitToWidth:true, // 너비에 자동 맞춤
-				indentRatio:1,
+				xscroll:false,
+				//fitToWidth:true, // 너비에 자동 맞춤
+				//indentRatio:1,
+				checkboxRelationFixed:true,
 				reserveKeys:{
 					parentHashKey:"pHash", // 부모 트리 포지션
 					hashKey:"hash", // 트리 포지션
-					openKey:"open", // 확장여부
+					openKey:"openStatus", // 확장여부
 					subTree:"subTree", // 자식개체키
 					displayKey:"display" // 표시여부
 				},
 				colGroup: [
+					{
+                        key:"chk", label:"checkbox", width:"30", align:"center", formatter:"checkbox", 
+                        disabled:function(){
+                            return false;
+                        },
+                        // checkbox 개체를 checked 된 상태로 만들기
+                        checked:function(){
+                            return (this.item.chk == true)? true:false;
+                        }
+                    },
 					{
 						key:"name",
 						label:"dir",
@@ -299,14 +310,12 @@
 				},
 				body: {
 					onclick:function(idx, item){
-						if(this.item.open == false){
+						
+							if(this.item.file){
 							$.fn.sourceClick(this.item);
 							sourceUrl = '/' + this.item.path + this.item.name;
 							sourceRevision = this.item.revision;
-							//myTree_target.click(idx);
-							//$.fn.sourceClick_target(this.item);
-							//toast.push(Object.toJSON(this.item));
-						}
+							}
 					},
 					addClass: function(){
 						// red, green, blue, yellow
@@ -345,7 +354,7 @@
 					reserveKeys:{
 						parentHashKey:"pHash", // 부모 트리 포지션
 						hashKey:"hash", // 트리 포지션
-						openKey:"open", // 확장여부
+						openKey:"openStatus", // 확장여부
 						subTree:"subTree", // 자식개체키
 						displayKey:"display" // 표시여부
 					},
@@ -378,12 +387,11 @@
 					},
 					body: {
 						onclick:function(idx, item){
-							if(this.item.open == false){
+							if(this.item.file){
 								$.fn.sourceClick_target(this.item);
 								targetUrl = '/' + this.item.path + this.item.name;
 								targetRevision = this.item.revision;
-								//toast.push(Object.toJSON(this.item));
-							}
+								}
 						},
 						addClass: function(){
 							// red, green, blue, yellow
@@ -427,9 +435,9 @@
 						<label>SVN Url</label>
 						<input type="text" id="svnUrl" name="svnUrl" value="http://wua.social:7070/subversion" class="AXInput" />
 						<label>SVN User Name</label>
-						<input type="text" id="svnUser" name="svnUser" value="test" class="AXInput" />
+						<input type="text" id="svnUser" name="svnUser" value="mostgreat" class="AXInput" />
 						<label>SVN Password</label>
-						<input type="password" id="svnPassword" name="svnPassword" value="" class="AXInput" />
+						<input type="password" id="svnPassword" name="svnPassword" value="jang3512!" class="AXInput" />
 					</form>
 					
 					<table cellpadding="0" cellspacing="0" style="table-layout:fixed;width:100%;">
@@ -455,9 +463,9 @@
 						<label>SVN Url</label>
 						<input type="text" id="svnUrl2" name="svnUrl" value="http://wua.social:7070/subversion" class="AXInput" />
 						<label>SVN User Name</label>
-						<input type="text" id="svnUser2" name="svnUser" value="test" class="AXInput" />
+						<input type="text" id="svnUser2" name="svnUser" value="mostgreat" class="AXInput" />
 						<label>SVN Password</label>
-						<input type="password" id="svnPassword2" name="svnPassword" value="" class="AXInput" />
+						<input type="password" id="svnPassword2" name="svnPassword" value="jang3512!" class="AXInput" />
 					</form>
 					
 					<table cellpadding="0" cellspacing="0" style="table-layout:fixed;width:100%;">
