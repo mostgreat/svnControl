@@ -186,6 +186,42 @@
 			});
 		});
 		
+		
+	  $("#deployCheckdList").click(function () {
+			
+			
+			var selectedList = myTree.getCheckedList(0);
+			
+			for(var i = 0 ; i < selectedList.length; i++){
+				if(selectedList[i].file){
+					console.log(selectedList[i].path + selectedList[i].name );
+					
+				}
+			}
+			
+			
+			/* $.ajax({
+					type:"post"		// 포스트방식
+					,url:url		// url 주소
+					,data:params	//  요청에 전달되는 프로퍼티를 가진 객체
+					,success:function(data){	//응답이 성공 상태 코드를 반환하면 호출되는 함수
+						$('#readDiffcontents').html('<xmp>' + data + '</xmp>');
+					}
+				    ,error:function(e) {	// 이곳의 ajax에서 에러가 나면 얼럿창으로 에러 메시지 출력
+				    	
+				    	alert(e.responseText);
+				    }
+				    ,beforeSend:function(){
+				        $('.wrap-loading').removeClass('display-none');
+				    }
+					,complete:function(){
+				        $('.wrap-loading').addClass('display-none');
+				 
+				    }
+					,timeout:100000 
+			}); */
+		});
+		
 	});
 	
 	
@@ -251,7 +287,6 @@
 
 			fnObj.tree1();
 			myTree.setTree(Tree);
-			
 		},
 		tree1: function(){
 
@@ -279,7 +314,7 @@
                         },
                         // checkbox 개체를 checked 된 상태로 만들기
                         checked:function(){
-                            return (this.item.chk == true)? true:false;
+                        	return (this.item.chk == true)? true:false;
                         }
                     },
 					{
@@ -432,11 +467,11 @@
 					<input type="button" value="View Source SVN" class="AXButton Red" id="readMore" name="readMore"/>
 					<form id="svnInfoForm" name="svnInfoForm">
 						<label>SVN Url</label>
-						<input type="text" id="svnUrl" name="svnUrl" value="http://wua.social:7070/subversion" class="AXInput" />
+						<input type="text" id="svnUrl" name="svnUrl" value="svn://54.65.9.65/svn/" class="AXInput" />
 						<label>SVN User Name</label>
-						<input type="text" id="svnUser" name="svnUser" value="mostgreat" class="AXInput" />
+						<input type="text" id="svnUser" name="svnUser" value="장현석" class="AXInput" />
 						<label>SVN Password</label>
-						<input type="password" id="svnPassword" name="svnPassword" value="jang3512!" class="AXInput" />
+						<input type="password" id="svnPassword" name="svnPassword" value="1234" class="AXInput" />
 					</form>
 					
 					<table cellpadding="0" cellspacing="0" style="table-layout:fixed;width:100%;">
@@ -486,7 +521,12 @@
 			</section>
 			
 			<div class="ax-col-10">
-			<center><input type="button" value="View Difference" class="AXButton Red" id="readDiff" name="readDiff"/></center>
+			<center>
+				<input type="button" value="View Difference" class="AXButton Red" id="readDiff" name="readDiff"/>
+				<input type="button" value="Deploy" class="AXButton Red" id="deployCheckdList" name="deployCheckdList"/>
+			</center>
+			</div>
+
 			</div>
 			
 			<div class="ax-col-10">
