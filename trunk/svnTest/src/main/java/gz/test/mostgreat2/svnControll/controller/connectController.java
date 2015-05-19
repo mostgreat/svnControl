@@ -232,6 +232,7 @@ public class connectController {
 	        diff.run();
 	        logger.debug("Diff Result = " + byteArrayOutputStream);
 	        result = new String(byteArrayOutputStream.toByteArray()).replace(System.getProperty("line.separator"), "\n");
+	        result = ( result.trim().length() == 0 ) ? "No difference" : result;
 	        
 	    } finally {
 	        svnOperationFactory.dispose();
