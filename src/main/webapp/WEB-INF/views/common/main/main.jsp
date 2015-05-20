@@ -189,23 +189,30 @@
 		
 	  $("#deployCheckdList").click(function () {
 			
-			
+		  	var url = '<c:url value="/svn/deploy.do" />';
 			var selectedList = myTree.getCheckedList(0);
+			var params = "{ \"deploys\" : [";
 			
 			for(var i = 0 ; i < selectedList.length; i++){
+				
 				if(selectedList[i].file){
-					console.log(selectedList[i].path + selectedList[i].name );
-					
+					if(params.indexOf("filePath") > -1){
+						params += ",";	
+					}
+					//console.log(selectedList[i].path + selectedList[i].name + "," +  selectedList[i].revision);
+					params += "{ \"filePath\" : \"" + selectedList[i].path + selectedList[i].name + "\" , \"revision\" : \"" + selectedList[i].revision + "\"}"
 				}
 			}
 			
-			
-			/* $.ajax({
+			params += "]}";
+			$.ajax({
 					type:"post"		// 포스트방식
 					,url:url		// url 주소
-					,data:params	//  요청에 전달되는 프로퍼티를 가진 객체
+					,contentType: "application/json"
+					,dataType:"json"
+					,data: params
 					,success:function(data){	//응답이 성공 상태 코드를 반환하면 호출되는 함수
-						$('#readDiffcontents').html('<xmp>' + data + '</xmp>');
+						alert(data.result);
 					}
 				    ,error:function(e) {	// 이곳의 ajax에서 에러가 나면 얼럿창으로 에러 메시지 출력
 				    	
@@ -219,7 +226,7 @@
 				 
 				    }
 					,timeout:100000 
-			}); */
+			});
 		});
 		
 	});
