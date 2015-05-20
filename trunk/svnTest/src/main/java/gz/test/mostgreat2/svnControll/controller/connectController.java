@@ -1,6 +1,8 @@
 package gz.test.mostgreat2.svnControll.controller;
 
 import gz.test.mostgreat2.common.model.SimpleResult;
+import gz.test.mostgreat2.svnControll.model.DeployInfo;
+import gz.test.mostgreat2.svnControll.model.DeployInfoWrapper;
 import gz.test.mostgreat2.svnControll.model.SvnInfo;
 
 import java.io.ByteArrayOutputStream;
@@ -18,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -236,6 +239,33 @@ public class connectController {
 	        
 	    } finally {
 	        svnOperationFactory.dispose();
+	    }
+		
+		return result;
+		
+	}
+	
+	@RequestMapping(value = "/deploy.do",  method = RequestMethod.POST,  consumes = "application/json")
+	public @ResponseBody SimpleResult deployCheckedList( HttpServletRequest req
+											,@RequestBody DeployInfoWrapper wrapper
+										    ) throws Exception {
+		
+		SimpleResult result = new SimpleResult();
+		
+		logger.debug("===============================");
+		logger.debug("===============================");
+		for(DeployInfo temp : wrapper.getDeploys()){
+			logger.debug(temp.getFilePath() + "," + temp.getRevision());
+		}
+		logger.debug("===============================");
+		logger.debug("===============================");
+	    
+		try {
+			
+			result.setResult("success");	    	
+	    } catch(Exception e) {
+	    	result.setResult("fail");
+	    	logger.debug(e.getMessage());
 	    }
 		
 		return result;
