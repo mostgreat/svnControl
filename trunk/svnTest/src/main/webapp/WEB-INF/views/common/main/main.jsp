@@ -228,7 +228,6 @@
 				        $('.wrap-loading').addClass('display-none');
 				 
 				    }
-					,timeout:100000 
 			});
 		});
 		
@@ -505,11 +504,11 @@
 					<input type="button" value="View Target SVN" class="AXButton Red" id="readMore2" name="readMore2"/>
 					<form id="svnInfoForm2" name="svnInfoForm2">
 						<label>SVN Url</label>
-						<input type="text" id="svnUrl2" name="svnUrl" value="http://wua.social:7070/subversion" class="AXInput" />
+						<input type="text" id="svnUrl2" name="svnUrl" value="svn://54.65.9.65/svn/" class="AXInput" />
 						<label>SVN User Name</label>
-						<input type="text" id="svnUser2" name="svnUser" value="mostgreat" class="AXInput" />
+						<input type="text" id="svnUser2" name="svnUser" value="장현석" class="AXInput" />
 						<label>SVN Password</label>
-						<input type="password" id="svnPassword2" name="svnPassword" value="jang3512!" class="AXInput" />
+						<input type="password" id="svnPassword2" name="svnPassword" value="1234" class="AXInput" />
 					</form>
 					
 					<table cellpadding="0" cellspacing="0" style="table-layout:fixed;width:100%;">
