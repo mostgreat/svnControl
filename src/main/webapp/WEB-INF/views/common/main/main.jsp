@@ -200,7 +200,10 @@
 						params += ",";	
 					}
 					//console.log(selectedList[i].path + selectedList[i].name + "," +  selectedList[i].revision);
-					params += "{ \"filePath\" : \"" + selectedList[i].path + selectedList[i].name + "\" , \"revision\" : \"" + selectedList[i].revision + "\"}"
+					params += "{ \"filePath\" : \"" + selectedList[i].path
+							 + "\" , \"fileName\" : \"" + selectedList[i].name 
+							 + "\" , \"revision\" : \"" + selectedList[i].revision 
+							 + "\" , \"file\" : \""     + selectedList[i].file + "\"}"
 				}
 			}
 			

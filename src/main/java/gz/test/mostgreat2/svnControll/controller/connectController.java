@@ -5,8 +5,10 @@ import gz.test.mostgreat2.svnControll.model.DeployInfo;
 import gz.test.mostgreat2.svnControll.model.DeployInfoWrapper;
 import gz.test.mostgreat2.svnControll.model.SvnInfo;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,13 +32,18 @@ import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNNodeKind;
 import org.tmatesoft.svn.core.SVNProperties;
 import org.tmatesoft.svn.core.SVNProperty;
+import org.tmatesoft.svn.core.SVNPropertyValue;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.auth.ISVNAuthenticationManager;
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
 import org.tmatesoft.svn.core.internal.wc2.ng.SvnDiffGenerator;
+import org.tmatesoft.svn.core.io.ISVNEditor;
 import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
+import org.tmatesoft.svn.core.io.diff.SVNDeltaGenerator;
+import org.tmatesoft.svn.core.wc.SVNClientManager;
+import org.tmatesoft.svn.core.wc.SVNCommitClient;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
 import org.tmatesoft.svn.core.wc2.SvnDiff;
@@ -56,6 +63,50 @@ public class connectController {
 	private static String SVN_URL = "";
 	private static String SVN_USER = "";
 	private static String SVN_PASSWORD = "";
+	
+	public static String getContent(String path, String name) throws UnsupportedEncodingException{
+		
+		DAVRepositoryFactory.setup( );
+		ByteArrayOutputStream baos = null;
+        String filePath = "/" + path.replace("//", "/") + name;
+        SVNRepository repository = null;
+        try {
+            repository = SVNRepositoryFactory.create( SVNURL.parseURIEncoded( SVN_URL ) );
+            ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager( SVN_USER , SVN_PASSWORD );
+            repository.setAuthenticationManager( authManager );
+
+            SVNNodeKind nodeKind = repository.checkPath( filePath , -1 );
+            
+            if ( nodeKind == SVNNodeKind.NONE ) {
+                logger.debug( "There is no entry at '" + SVN_URL + "'." );
+            } else if ( nodeKind == SVNNodeKind.DIR ) {
+            	logger.debug( "The entry at '" + SVN_URL + "' is a directory while a file was expected." );
+            }
+            Map fileProperties = new HashMap( );
+            SVNProperties svnProperties = new SVNProperties();
+            baos = new ByteArrayOutputStream( );
+            repository.getFile( filePath , -1 , svnProperties , baos );
+            
+            //String mimeType = ( String ) svnProperties.get( SVNProperty.MIME_TYPE );
+            String mimeType = svnProperties.getStringValue( SVNProperty.MIME_TYPE );
+            boolean isTextType = SVNProperty.isTextMimeType( mimeType );
+
+            Iterator iterator = fileProperties.keySet( ).iterator( );
+            /*while ( iterator.hasNext( ) ) {
+                String propertyName = ( String ) iterator.next( );
+                String propertyValue = ( String ) fileProperties.get( propertyName );
+                System.out.println( "File property: " + propertyName + "=" + propertyValue );
+            }*/
+
+            if ( !isTextType ) {
+            	return "Not a text file.";
+            	
+            }
+        }catch(Exception e){
+        	logger.debug(e.getMessage());
+        }
+        return baos.toString("UTF-8");
+	}
 
 	@RequestMapping(value = "/login.do", method = RequestMethod.POST)
 	public @ResponseBody List<SvnInfo> loginPage(
@@ -95,48 +146,8 @@ public class connectController {
 		logger.debug("SVN Get Content");
 		logger.debug(path.replace("//", "/") + name);
 		
-		DAVRepositoryFactory.setup( );
-		ByteArrayOutputStream baos = null;
-        String filePath = "/" + path.replace("//", "/") + name;
-        SVNRepository repository = null;
-        try {
-            repository = SVNRepositoryFactory.create( SVNURL.parseURIEncoded( SVN_URL ) );
-            ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager( SVN_USER , SVN_PASSWORD );
-            repository.setAuthenticationManager( authManager );
-
-            SVNNodeKind nodeKind = repository.checkPath( filePath , -1 );
-            
-            if ( nodeKind == SVNNodeKind.NONE ) {
-                System.err.println( "There is no entry at '" + SVN_URL + "'." );
-                System.exit( 1 );
-            } else if ( nodeKind == SVNNodeKind.DIR ) {
-                System.err.println( "The entry at '" + SVN_URL + "' is a directory while a file was expected." );
-                System.exit( 1 );
-            }
-            Map fileProperties = new HashMap( );
-            SVNProperties svnProperties = new SVNProperties();
-            baos = new ByteArrayOutputStream( );
-            repository.getFile( filePath , -1 , svnProperties , baos );
-            
-            //String mimeType = ( String ) svnProperties.get( SVNProperty.MIME_TYPE );
-            String mimeType = svnProperties.getStringValue( SVNProperty.MIME_TYPE );
-            boolean isTextType = SVNProperty.isTextMimeType( mimeType );
-
-            Iterator iterator = fileProperties.keySet( ).iterator( );
-            /*while ( iterator.hasNext( ) ) {
-                String propertyName = ( String ) iterator.next( );
-                String propertyValue = ( String ) fileProperties.get( propertyName );
-                System.out.println( "File property: " + propertyName + "=" + propertyValue );
-            }*/
-
-            if ( !isTextType ) {
-            	return "Not a text file.";
-            	
-            }
-        }catch(Exception e){
-        	logger.debug(e.getMessage());
-        }
-        return baos.toString("UTF-8");
+		return getContent(path, name);
+		
 	}
 	
 	@RequestMapping(value = "/getContents.do", method = RequestMethod.POST)
@@ -252,20 +263,62 @@ public class connectController {
 		
 		SimpleResult result = new SimpleResult();
 		
-		logger.debug("===============================");
-		logger.debug("===============================");
-		for(DeployInfo temp : wrapper.getDeploys()){
-			logger.debug(temp.getFilePath() + "," + temp.getRevision());
-		}
-		logger.debug("===============================");
-		logger.debug("===============================");
-	    
-		try {
-			
+		SVNRepository repository = null;
+		ISVNEditor commitEditor = null;
+		final SvnOperationFactory svnOperationFactory = new SvnOperationFactory();
+		String checksum;
+		SVNDeltaGenerator deltaGenerator = new SVNDeltaGenerator();
+	    try {
+			repository = SVNRepositoryFactory.create( SVNURL.parseURIEncoded( SVN_URL ) );
+	        ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager( SVN_USER , SVN_PASSWORD );
+	        repository.setAuthenticationManager( authManager );
+	        
+	        SVNClientManager manager = SVNClientManager.newInstance();
+	        manager.setAuthenticationManager(authManager);
+	        
+	        String root = SVN_URL + "branches/";
+	        for(DeployInfo temp : wrapper.getDeploys()){
+	        	if(temp.isFile()){
+	        	String[] splitWord = temp.getFilePath().replace("//", "/").split("/");
+	        	String addedDir = "";
+	        	for(int i = 1  ; i < splitWord.length ; i++){
+	        		addedDir += splitWord[i]; 
+	        		if(chkDirExist(repository, "branches/" + addedDir)){
+	        			manager.getCommitClient().doMkDir(
+		        				new SVNURL[]{SVNURL.parseURIDecoded( root + addedDir)}, 
+		        				"new Folder", 
+		        				new SVNProperties() , 
+		        				false);
+	        		}
+	        		addedDir += "/";
+	        	}
+	        	/*logger.debug("=======================================================================================");
+	        	logger.debug(temp.getFilePath() + temp.getFileName() + "," + temp.getRevision() + "," + temp.isFile());
+				commitEditor = repository.getCommitEditor("commit automatically", null);
+				commitEditor.openRoot(-1);
+				commitEditor.openDir("branches/",1);
+				
+				logger.debug("===Make Dir =" + "branches/" + temp.getFilePath().replace("//", "/"));
+				commitEditor.addFile("branches/"+ temp.getFilePath().replace("//", "/") + temp.getFileName(), null, -1);
+	            commitEditor.changeFileProperty("branches/" + temp.getFilePath().replace("//", "/") + temp.getFileName() , "filePropertyName", SVNPropertyValue.create("filePropertyValue"));
+	            commitEditor.applyTextDelta( "branches/" + temp.getFilePath().replace("//", "/") + temp.getFileName(), null);
+
+	            final ByteArrayInputStream fileContentsStream = new ByteArrayInputStream( getContent(temp.getFilePath(), temp.getFileName()).getBytes());
+	            checksum = deltaGenerator.sendDelta("branches/" + temp.getFilePath().replace("//", "/") + temp.getFileName(), fileContentsStream, commitEditor, true);
+	            fileContentsStream.close();
+	            commitEditor.closeFile("branches/" + temp.getFilePath().replace("//", "/") + temp.getFileName(), checksum);
+	            commitEditor.closeDir();
+	            commitEditor.closeDir();
+	            commitEditor.closeEdit();*/
+	        	}
+			}
+	        
 			result.setResult("success");	    	
 	    } catch(Exception e) {
 	    	result.setResult("fail");
 	    	logger.debug(e.getMessage());
+	    } finally {
+	        svnOperationFactory.dispose();
 	    }
 		
 		return result;
@@ -326,5 +379,28 @@ public class connectController {
         }
         
         return svnInfolist;
+    }
+	
+	public static boolean chkDirExist(SVNRepository repository, String path) {
+        logger.debug("=====================");
+        logger.debug("check If Dir is existed");
+        logger.debug("path :" + path);
+        
+		boolean result = false;
+		try{
+			SVNNodeKind nodeKind = repository.checkPath(path, -1);
+			if (nodeKind != SVNNodeKind.DIR) {
+	           	result = true;            	            	
+	        }
+	        logger.debug("Type : " + nodeKind);
+	        logger.debug("Exist : " + result);
+	        logger.debug("=====================");
+	        return result;
+		}catch(Exception e){
+			result = true;
+		}
+		
+		return result;
+        
     }
 }
