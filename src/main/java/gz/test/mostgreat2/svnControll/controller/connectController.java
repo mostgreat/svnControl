@@ -4,6 +4,7 @@ import gz.test.mostgreat2.common.model.SimpleResult;
 import gz.test.mostgreat2.svnControll.model.DeployInfo;
 import gz.test.mostgreat2.svnControll.model.DeployInfoWrapper;
 import gz.test.mostgreat2.svnControll.model.SvnInfo;
+import gz.test.mostgreat2.svnControll.model.SvnInfoWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -43,7 +44,6 @@ import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.io.diff.SVNDeltaGenerator;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
-import org.tmatesoft.svn.core.wc.SVNCommitClient;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
 import org.tmatesoft.svn.core.wc2.SvnDiff;
@@ -59,7 +59,6 @@ import org.tmatesoft.svn.core.wc2.SvnTarget;
 public class connectController {
 
 	private static final Logger logger = LoggerFactory.getLogger(connectController.class);
-	private static List<SvnInfo> result = null;
 	private static String SVN_URL = "";
 	private static String SVN_USER = "";
 	private static String SVN_PASSWORD = "";
@@ -68,7 +67,7 @@ public class connectController {
 		
 		DAVRepositoryFactory.setup( );
 		ByteArrayOutputStream baos = null;
-        String filePath = "/" + path.replace("//", "/") + name;
+        String filePath = "/" + path + name;
         SVNRepository repository = null;
         try {
             repository = SVNRepositoryFactory.create( SVNURL.parseURIEncoded( SVN_URL ) );
@@ -109,7 +108,7 @@ public class connectController {
 	}
 
 	@RequestMapping(value = "/login.do", method = RequestMethod.POST)
-	public @ResponseBody List<SvnInfo> loginPage(
+	public @ResponseBody SvnInfoWrapper loginPage(
 			@RequestParam(value="svnUrl", required= true) String svnUrl,
 			@RequestParam(value="svnUser", required= true) String svnUser,
 			@RequestParam(value="svnPassword", required= true) String svnPassword,
@@ -128,13 +127,11 @@ public class connectController {
 		repository.testConnection();
 		
 		logger.debug("SVN URL IS = " + repository.getLocation().toString());
-		result = new ArrayList<SvnInfo>();
-		result.addAll(listEntries(repository, ""));
-		
-		getChildList(repository ,result);
-		
+		SvnInfoWrapper result = new SvnInfoWrapper();
+		result.setSvnList(listEntries(repository, ""));
+		List<String> rootDir = getChildList(repository ,result.getSvnList());
+		result.setRootList(rootDir);
 		return result;
-		
 	}
 	
 	@RequestMapping(value = "/getContent.do", method = RequestMethod.POST)
@@ -144,66 +141,9 @@ public class connectController {
 										    Model model) throws Exception {
 		
 		logger.debug("SVN Get Content");
-		logger.debug(path.replace("//", "/") + name);
+		logger.debug(path + name);
 		
 		return getContent(path, name);
-		
-	}
-	
-	@RequestMapping(value = "/getContents.do", method = RequestMethod.POST)
-	public @ResponseBody SimpleResult getContents( HttpServletRequest req
-										    ,@RequestParam("name") String name
-										    ,@RequestParam("path") String path) throws Exception {
-		
-		SimpleResult result = new SimpleResult();
-		logger.debug("SVN Get Contents");
-		logger.debug(path.replace("//", "/") + name);
-		
-		DAVRepositoryFactory.setup( );
-		ByteArrayOutputStream baos = null;
-        String filePath = "/" + path.replace("//", "/") + name;
-        SVNRepository repository = null;
-        try {
-            repository = SVNRepositoryFactory.create( SVNURL.parseURIEncoded( SVN_URL ) );
-            ISVNAuthenticationManager authManager = SVNWCUtil.createDefaultAuthenticationManager( SVN_USER , SVN_PASSWORD );
-            repository.setAuthenticationManager( authManager );
-
-            SVNNodeKind nodeKind = repository.checkPath( filePath , -1 );
-            
-            if ( nodeKind == SVNNodeKind.NONE ) {
-                System.err.println( "There is no entry at '" + SVN_URL + "'." );
-                System.exit( 1 );
-            } else if ( nodeKind == SVNNodeKind.DIR ) {
-                System.err.println( "The entry at '" + SVN_URL + "' is a directory while a file was expected." );
-                System.exit( 1 );
-            }
-            Map fileProperties = new HashMap( );
-            SVNProperties svnProperties = new SVNProperties();
-            baos = new ByteArrayOutputStream( );
-            repository.getFile( filePath , -1 , svnProperties , baos );
-            
-            //String mimeType = ( String ) svnProperties.get( SVNProperty.MIME_TYPE );
-            String mimeType = svnProperties.getStringValue( SVNProperty.MIME_TYPE );
-            boolean isTextType = SVNProperty.isTextMimeType( mimeType );
-
-            Iterator iterator = fileProperties.keySet( ).iterator( );
-            /*while ( iterator.hasNext( ) ) {
-                String propertyName = ( String ) iterator.next( );
-                String propertyValue = ( String ) fileProperties.get( propertyName );
-                System.out.println( "File property: " + propertyName + "=" + propertyValue );
-            }*/
-
-            if ( !isTextType ) {
-            	result.setResult("Not a text file.");
-            	return result;
-            }
-        }catch(Exception e){
-        	logger.debug(e.getMessage());
-        }
-  
-        logger.debug(baos.toString("UTF-8"));
-		result.setResult( baos.toString("UTF-8"));
-		return result;
 		
 	}
 	
@@ -276,14 +216,14 @@ public class connectController {
 	        SVNClientManager manager = SVNClientManager.newInstance();
 	        manager.setAuthenticationManager(authManager);
 	        
-	        String root = SVN_URL + "branches/";
+	        String root = SVN_URL + wrapper.getDeployDir() + "/";
 	        for(DeployInfo temp : wrapper.getDeploys()){
 	        	if(temp.isFile()){
-	        	String[] splitWord = temp.getFilePath().replace("//", "/").split("/");
+	        	String[] splitWord = temp.getFilePath().split("/");
 	        	String addedDir = "";
 	        	for(int i = 1  ; i < splitWord.length ; i++){
 	        		addedDir += splitWord[i]; 
-	        		if(chkDirExist(repository, "branches/" + addedDir)){
+	        		if(chkDirExist(repository, wrapper.getDeployDir() + "/" + addedDir)){
 	        			manager.getCommitClient().doMkDir(
 		        				new SVNURL[]{SVNURL.parseURIDecoded( root + addedDir)}, 
 		        				"new Folder", 
@@ -294,33 +234,33 @@ public class connectController {
 	        	}
 	        		
 	        		logger.debug("branches/" + addedDir + temp.getFileName() + "," + temp.getRevision() );
-	        		if(chkFileExist(repository,"branches/" + addedDir + temp.getFileName() )){ //there is no file already exists
+	        		if(chkFileExist(repository, wrapper.getDeployDir() + "/" + addedDir + temp.getFileName() )){ //there is no file already exists
 	        			commitEditor = repository.getCommitEditor("commit automatically", null);
 		        		commitEditor.openRoot(-1);
-		        		commitEditor.openDir("branches/" + addedDir , 1);
-						commitEditor.addFile("branches/" + addedDir + temp.getFileName(), null, -1);
-			            commitEditor.changeFileProperty("branches/" + addedDir + temp.getFileName() , "filePropertyName", SVNPropertyValue.create("filePropertyValue"));
-			            commitEditor.applyTextDelta( "branches/" + addedDir + temp.getFileName(), null);
+		        		commitEditor.openDir(wrapper.getDeployDir() + "/" + addedDir , 1);
+						commitEditor.addFile(wrapper.getDeployDir() + "/" + addedDir + temp.getFileName(), null, -1);
+			            commitEditor.changeFileProperty(wrapper.getDeployDir() + "/" + addedDir + temp.getFileName() , "filePropertyName", SVNPropertyValue.create("filePropertyValue"));
+			            commitEditor.applyTextDelta( wrapper.getDeployDir() + "/" + addedDir + temp.getFileName(), null);
 		
 			            final ByteArrayInputStream fileContentsStream = new ByteArrayInputStream( getContent(temp.getFilePath(), temp.getFileName()).getBytes());
-			            checksum = deltaGenerator.sendDelta("branches/" + addedDir + temp.getFileName(), fileContentsStream, commitEditor, true);
+			            checksum = deltaGenerator.sendDelta(wrapper.getDeployDir() + "/" + addedDir + temp.getFileName(), fileContentsStream, commitEditor, true);
 			            fileContentsStream.close();
-			            commitEditor.closeFile("branches/" + addedDir + temp.getFileName(), checksum);
+			            commitEditor.closeFile(wrapper.getDeployDir() + "/" + addedDir + temp.getFileName(), checksum);
 			            commitEditor.closeDir();
 			            commitEditor.closeDir();
 			            commitEditor.closeEdit();
 	        		}else{
 	        			commitEditor = repository.getCommitEditor("commit automatically", null);
 		        		commitEditor.openRoot(-1);
-		        		commitEditor.openDir("branches/" + addedDir , 1);
-		        		commitEditor.openFile("branches/" + addedDir + temp.getFileName(), -1);
-			            commitEditor.changeFileProperty("branches/" + addedDir + temp.getFileName() , "filePropertyName", SVNPropertyValue.create("filePropertyValue"));
-			            commitEditor.applyTextDelta( "branches/" + addedDir + temp.getFileName(), null);
+		        		commitEditor.openDir(wrapper.getDeployDir() + "/" + addedDir , 1);
+		        		commitEditor.openFile(wrapper.getDeployDir() + "/" + addedDir + temp.getFileName(), -1);
+			            commitEditor.changeFileProperty(wrapper.getDeployDir() + "/" + addedDir + temp.getFileName() , "filePropertyName", SVNPropertyValue.create("filePropertyValue"));
+			            commitEditor.applyTextDelta( wrapper.getDeployDir() + "/" + addedDir + temp.getFileName(), null);
 		
 			            final ByteArrayInputStream fileContentsStream = new ByteArrayInputStream( getContent(temp.getFilePath(), temp.getFileName()).getBytes());
-			            checksum = deltaGenerator.sendDelta("branches/" + addedDir + temp.getFileName(), fileContentsStream, commitEditor, true);
+			            checksum = deltaGenerator.sendDelta(wrapper.getDeployDir() + "/" + addedDir + temp.getFileName(), fileContentsStream, commitEditor, true);
 			            fileContentsStream.close();
-			            commitEditor.closeFile("branches/" + addedDir + temp.getFileName(), checksum);
+			            commitEditor.closeFile(wrapper.getDeployDir() + "/" + addedDir + temp.getFileName(), checksum);
 			            commitEditor.closeDir();
 			            commitEditor.closeDir();
 			            commitEditor.closeEdit();
@@ -342,20 +282,22 @@ public class connectController {
 		
 	}
 	
-	public static void getChildList(SVNRepository repository, List<SvnInfo> svnInfo) throws SVNException {
+	public static List<String> getChildList(SVNRepository repository, List<SvnInfo> svnInfo) throws SVNException {
 		
+		List<String> rootDir = new ArrayList<String>(); 
 		
 		for(SvnInfo temp: svnInfo){
 			if(temp.isOpen()){ //sub directory exist
 				//logger.debug("===============" + temp.getName() + "===" + temp.getPath() );
+				if(!temp.getPath().endsWith("/"))
+					rootDir.add(temp.getName());
 				temp.setSubTree(listEntries(repository, 
-						temp.getName().equals("trunk") 
-					||  temp.getName().equals("tags")
-					||  temp.getName().equals("branches")
-						? temp.getName() : temp.getPath() + "/" + temp.getName() ));
+						temp.getPath().endsWith("/") ? temp.getPath() + temp.getName() : temp.getName() ));
 				getChildList(repository, temp.getSubTree());
 			}
 		}
+		
+		return rootDir;
 	}
 
 	public static List<SvnInfo> listEntries(SVNRepository repository, String path) throws SVNException {

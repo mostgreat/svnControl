@@ -94,7 +94,15 @@
 					,dataType:"json"
 					,success:function(data){	//응답이 성공 상태 코드를 반환하면 호출되는 함수
 						
-						Tree = data;
+						Tree = data.svnList;
+						for(var i = 0 ; i < data.rootList.length; i++){
+							if(data.rootList[i] != 'trunk'){
+								$('#svnRootDir').append('<option value=\"' + data.rootList[i] + '\">' + data.rootList[i] + '</option>');	
+							}
+						}
+						
+						$('#deployCheckdList').removeClass('display-none');
+						$('#svnRootDir').removeClass('display-none');
 						fnObj.pageStart.delay(0.1);
 					}
 				    ,error:function(e) {	// 이곳의 ajax에서 에러가 나면 얼럿창으로 에러 메시지 출력
@@ -137,7 +145,7 @@
 					,dataType:"json"
 					,success:function(data){	//응답이 성공 상태 코드를 반환하면 호출되는 함수
 						
-						Tree_target = data;
+						Tree_target = data.svnList;;
 						fnObj2.pageStart.delay(0.1);
 					}
 				    ,error:function(e) {	// 이곳의 ajax에서 에러가 나면 얼럿창으로 에러 메시지 출력
@@ -189,6 +197,9 @@
 		
 	  $("#deployCheckdList").click(function () {
 			
+		    var result = confirm($('#targetDir option:selected').val() + '로 커밋하시겠습니까?');
+		    if(!result)
+		    	return false;
 		  	var url = '<c:url value="/svn/deploy.do" />';
 			var selectedList = myTree.getCheckedList(0);
 			var params = "{ \"deploys\" : [";
@@ -207,7 +218,7 @@
 				}
 			}
 			
-			params += "]}";
+			params += "], \"deployDir\" : \"" + $('#targetDir option:selected').val() + "\" }";
 			$.ajax({
 					type:"post"		// 포스트방식
 					,url:url		// url 주소
@@ -474,6 +485,9 @@
 				<div class="ax-col-5">
 				<div class="ax-unit">
 					<input type="button" value="View Source SVN" class="AXButton Red" id="readMore" name="readMore"/>
+					<input type="button" value="Deploy" class="AXButton Red display-none" id="deployCheckdList" name="deployCheckdList"/>
+					<select class="AXSelect display-none" id="svnRootDir" name="svnRootDir"> 
+	                </select>
 					<form id="svnInfoForm" name="svnInfoForm">
 						<label>SVN Url</label>
 						<input type="text" id="svnUrl" name="svnUrl" value="svn://54.65.9.65/svn/" class="AXInput" />
@@ -487,7 +501,7 @@
 			                <tbody>
 			                    <tr>
 			                        <td>
-			                            <div id="AXTreeTarget" style="height:300px;"></div>
+			                            <div id="AXTreeTarget" style="height:500px;"></div>
 			                        </td>
 			                        
 			                    </tr>
@@ -515,7 +529,7 @@
 			                <tbody>
 			                    <tr>
 			                        <td>
-			                            <div id="AXTreeTarget_target" style="height:300px;"></div>
+			                            <div id="AXTreeTarget_target" style="height:500px;"></div>
 			                        </td>
 			                        
 			                    </tr>
@@ -532,7 +546,6 @@
 			<div class="ax-col-10">
 			<center>
 				<input type="button" value="View Difference" class="AXButton Red" id="readDiff" name="readDiff"/>
-				<input type="button" value="Deploy" class="AXButton Red" id="deployCheckdList" name="deployCheckdList"/>
 			</center>
 			</div>
 
