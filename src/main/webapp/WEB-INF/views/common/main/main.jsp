@@ -95,6 +95,7 @@
 					,success:function(data){	//응답이 성공 상태 코드를 반환하면 호출되는 함수
 						
 						Tree = data.svnList;
+						$('#svnRootDir').html('');
 						for(var i = 0 ; i < data.rootList.length; i++){
 							if(data.rootList[i] != 'trunk'){
 								$('#svnRootDir').append('<option value=\"' + data.rootList[i] + '\">' + data.rootList[i] + '</option>');	
@@ -197,7 +198,7 @@
 		
 	  $("#deployCheckdList").click(function () {
 			
-		    var result = confirm($('#targetDir option:selected').val() + '로 커밋하시겠습니까?');
+		    var result = confirm($('#svnRootDir option:selected').val() + '로 커밋하시겠습니까?');
 		    if(!result)
 		    	return false;
 		  	var url = '<c:url value="/svn/deploy.do" />';
@@ -218,7 +219,7 @@
 				}
 			}
 			
-			params += "], \"deployDir\" : \"" + $('#targetDir option:selected').val() + "\" }";
+			params += "], \"deployDir\" : \"" + $('#svnRootDir option:selected').val() + "\" }";
 			$.ajax({
 					type:"post"		// 포스트방식
 					,url:url		// url 주소
