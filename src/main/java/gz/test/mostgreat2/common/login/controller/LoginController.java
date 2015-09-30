@@ -113,12 +113,12 @@ public class LoginController {
 
 		logger.debug("====Login Result==== : " + resultLogin);
 
-		if (resultLogin == null) {
+		/*if (resultLogin == null) {
 			
 			logger.debug("Id와 Password가 맞지 않습니다.");
 			result.put("result", "Id/Password is wrong, Please Try Again.");
 			return result;
-		}
+		}*/
 
 		logger.debug("user Id = " + userId);
 		logger.debug("user password = " + passWd);
