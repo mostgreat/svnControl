@@ -490,11 +490,11 @@
 	                </select>
 					<form id="svnInfoForm" name="svnInfoForm">
 						<label>SVN Url</label>
-						<input type="text" id="svnUrl" name="svnUrl" value="" class="AXInput" />
+						<input type="text" id="svnUrl" name="svnUrl" value="svn://wua.social:3690" class="AXInput" />
 						<label>SVN User Name</label>
-						<input type="text" id="svnUser" name="svnUser" value="" class="AXInput" />
+						<input type="text" id="svnUser" name="svnUser" value="mostgreat" class="AXInput" />
 						<label>SVN Password</label>
-						<input type="password" id="svnPassword" name="svnPassword" value="" class="AXInput" />
+						<input type="password" id="svnPassword" name="svnPassword" value="1234" class="AXInput" />
 					</form>
 					
 					<table cellpadding="0" cellspacing="0" style="table-layout:fixed;width:100%;">
